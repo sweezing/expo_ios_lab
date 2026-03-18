@@ -1,5 +1,5 @@
 import "../global.css";
-import { Stack } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
@@ -25,9 +25,14 @@ export default function RootLayout() {
     return null;
   }
 
+  const isAuthenticated: boolean = true;
+
+  if (!isAuthenticated) return <Redirect href={'/(auth)/sign-in' as any} />;
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(auth)" />
     </Stack>
   );
 }
