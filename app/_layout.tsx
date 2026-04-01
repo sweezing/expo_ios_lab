@@ -2,7 +2,9 @@ import "../global.css";
 import { Redirect, Stack } from "expo-router";
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+
+import { getCurrentAccount } from "../lib/appwrite";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,6 +16,7 @@ export default function RootLayout() {
     'Quicksand-Medium': require('../assets/fonts/Quicksand-Medium.ttf'),
     'Quicksand-SemiBold': require('../assets/fonts/Quicksand-SemiBold.ttf'),
   });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (loaded || error) {
@@ -21,13 +24,27 @@ export default function RootLayout() {
     }
   }, [loaded, error]);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await getCurrentAccount();
+        if (!cancelled) setIsAuthenticated(true);
+      } catch {
+        if (!cancelled) setIsAuthenticated(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (!loaded && !error) {
     return null;
   }
 
-  const isAuthenticated: boolean = true;
-
-  if (!isAuthenticated) return <Redirect href={'/(auth)/sign-in' as any} />;
+  if (isAuthenticated === null) return null;
+  if (!isAuthenticated) return <Redirect href={"/(auth)/sign-in" as any} />;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
